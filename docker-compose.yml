@@ -3,7 +3,7 @@ version: '3'
 services:
   #Automated nginx proxy for Docker containers using docker-gen https://github.com/jwilder/nginx-proxy
   #alpine has HTTP/2 support(valid ssl cert required)
-  nginx-proxy:
+  webproxy:
     image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     restart: always
@@ -21,17 +21,17 @@ services:
     networks:
     - webproxy
 
-  letsencrypt:
+  webproxy-ssl-companion:
     #LetsEncrypt companion container for nginx-proxy https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion
     image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt
+    container_name: letsencrypt-nginx-proxy-companion
     volumes:
     - ./nginx/data/vhost.d:/etc/nginx/vhost.d
     - ./nginx/data/certs:/etc/nginx/certs:rw
     - ./nginx/data/html:/usr/share/nginx/html
     - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
-    - nginx-proxy
+    - webproxy
     networks:
     - webproxy
 
@@ -40,37 +40,37 @@ services:
     container_name: keycloak
     restart: always
     environment:
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
       JDBC_PARAMS: ${JDBC_PARAMS}
       KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KEYCLOAK_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
       KEYCLOAK_USER: ${KEYCLOAK_USER}
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
       #nginx-proxy
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
-      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      VIRTUAL_HOST: ${KEYCLOAK_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${KEYCLOAK_VIRTUAL_PORT}
       PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
-      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_HOST: ${KEYCLOAK_LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     ports:
     - "8081:8080"
     depends_on:
-    - postgres
+    - keycloak-relational-database
     networks:
     - webproxy
 
-  postgres:
+  keycloak-relational-database:
     image: postgres
-    container_name: postgres
+    container_name: keycloak_postgres
     restart: always
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${KEYCLOAK_DB_DATABASE}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
-    - data:/var/lib/postgresql/data
+    - keycloak-relational-database-data:/var/lib/postgresql/data
     networks:
     - webproxy
 
@@ -78,4 +78,4 @@ networks:
   webproxy:
 
 volumes:
-  data:
+  keycloak-relational-database-data:
