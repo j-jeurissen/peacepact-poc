@@ -13,10 +13,10 @@ services:
     - 80:80
     - 443:443
     volumes:
-    - ./nginx/data/certs:/etc/nginx/certs:ro
-    - ./nginx/data/conf.d:/etc/nginx/conf.d
-    - ./nginx/data/vhost.d:/etc/nginx/vhost.d
-    - ./nginx/data/html:/usr/share/nginx/html
+    - ./data/nginx/certs:/etc/nginx/certs:ro
+    - ./data/nginx/conf.d:/etc/nginx/conf.d
+    - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+    - ./data/nginx/html:/usr/share/nginx/html
     - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
     - webproxy
@@ -26,9 +26,9 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: letsencrypt-nginx-proxy-companion
     volumes:
-    - ./nginx/data/vhost.d:/etc/nginx/vhost.d
-    - ./nginx/data/certs:/etc/nginx/certs:rw
-    - ./nginx/data/html:/usr/share/nginx/html
+    - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+    - ./data/nginx/certs:/etc/nginx/certs:rw
+    - ./data/nginx/html:/usr/share/nginx/html
     - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
     - webproxy
@@ -54,8 +54,6 @@ services:
       PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
       LETSENCRYPT_HOST: ${KEYCLOAK_LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    ports:
-    - "8081:8080"
     depends_on:
     - keycloak-relational-database
     networks:
@@ -74,8 +72,44 @@ services:
     networks:
     - webproxy
 
+  wordpress:
+    depends_on:
+    - keycloak-relational-database
+    build:
+      context: ./docker-images/wordpress
+    image: jjeurissen/wordpress-peacepact-poc:latest
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: wordpress-relational-database:3306
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      VIRTUAL_HOST: ${WORDPRESS_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${WORDPRESS_VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${WORDPRESS_LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    working_dir: /var/www/html
+    volumes:
+      - ./data/wordpress/wp-content:/var/www/html/wp-content
+      - ./data/wordpress/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    networks:
+    - webproxy
+
+  wordpress-relational-database:
+    image: mariadb:latest
+    volumes:
+    - wordpress-relational-database-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+    - webproxy
+
 networks:
   webproxy:
 
 volumes:
   keycloak-relational-database-data:
+  wordpress-relational-database-data:
