@@ -37,7 +37,9 @@ services:
     - webproxy
 
   keycloak:
-    image: jboss/keycloak
+    build:
+      context: ./docker-images/keycloak
+    image: jjeurissen/keycloak:latest
     container_name: keycloak
     #restart: always
     environment:

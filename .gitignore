@@ -37,3 +37,4 @@ argfile*
 hs_err_pid*
 .env
 data
+.idea
