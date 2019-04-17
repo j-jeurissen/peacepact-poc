@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  keycloak:
+    build:
+      context: ./docker-images/keycloak/development
+    container_name: keycloak_dev
+    image: jjeurissen/keycloak-dev:latest
+    ports:
+      - 8081:8080
+    #restart: always
+    environment:
+      #Database settings
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak-relational-database
+      DB_SCHEMA: public
+      DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      JDBC_PARAMS: ${JDBC_PARAMS}
+      #Keycloak
+      KEYCLOAK_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+
+    volumes:
+    - ./docker-images/keycloak/theme/peacepact:/opt/jboss/keycloak/themes/peacepact
+    depends_on:
+    - keycloak-relational-database
+    networks:
+    - keycloak-development
+
+  keycloak-relational-database:
+    image: postgres:11.2
+    container_name: keycloak_postgres
+    #restart: always
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_DATABASE}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+    - keycloak-relational-database-data:/var/lib/postgresql/data
+    networks:
+    - keycloak-development
+
+
+
+networks:
+  keycloak-development:
+
+volumes:
+  keycloak-relational-database-data:
+    driver: local
+  wordpress-relational-database-data:
+    driver: local

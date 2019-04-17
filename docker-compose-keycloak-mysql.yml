@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: keycloak-relational-database
+      DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      JDBC_PARAMS: ${JDBC_PARAMS}
+#      KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KEYCLOAK_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+#      #nginx-proxy
+#      VIRTUAL_HOST: ${KEYCLOAK_VIRTUAL_HOST}
+#      VIRTUAL_PORT: ${KEYCLOAK_VIRTUAL_PORT}
+#      PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
+#      LETSENCRYPT_HOST: ${KEYCLOAK_LETSENCRYPT_HOST}
+#      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    ports:
+    - "8081:8080"
+    depends_on:
+    - keycloak-relational-database
+    networks:
+    - keycloak-mysql-testing
+
+  keycloak-relational-database:
+    image: mariadb:10.3
+    volumes:
+    - keycloak-relational-database-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: ${KEYCLOAK_DB_DATABASE}
+      MYSQL_USER: ${KEYCLOAK_DB_USER}
+      MYSQL_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    networks:
+    - keycloak-mysql-testing
+
+
+
+networks:
+  keycloak-mysql-testing:
+
+volumes:
+  keycloak-relational-database-data:
+    driver: local
+  wordpress-relational-database-data:
+    driver: local
