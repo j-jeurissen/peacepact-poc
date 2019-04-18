@@ -37,9 +37,10 @@ services:
     - webproxy
 
   keycloak:
-    build:
-      context: ./docker-images/keycloak
-    image: jjeurissen/keycloak:latest
+    #build:
+    #  context: ./docker-images/keycloak
+    #image: jjeurissen/keycloak:latest
+    image: jjeurissen/keycloak-dev:latest
     container_name: keycloak
     #restart: always
     environment:
@@ -60,6 +61,8 @@ services:
       PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
       LETSENCRYPT_HOST: ${KEYCLOAK_LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+    - ./docker-images/keycloak/theme/peacepact:/opt/jboss/keycloak/themes/peacepact
     depends_on:
     - keycloak-relational-database
     networks:

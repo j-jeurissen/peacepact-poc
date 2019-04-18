@@ -62,6 +62,20 @@
             </div>
             </#if>
 
+            <div class="form-group">
+                <div class="${properties.kcLabelWrapperClass!}">
+                    <label for="user.attributes.referralid" class="${properties.kcLabelClass!}">${msg("referral")} (${msg("username")})</label>
+                </div>
+
+                <div class="col-sm-10 col-md-10">
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.referralid" name="user.attributes.referralid"/>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                setReferralid();
+            </script>
+
             <#if recaptchaRequired??>
             <div class="form-group">
                 <div class="${properties.kcInputWrapperClass!}">
