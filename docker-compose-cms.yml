@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  wordpress:
+    depends_on:
+    - wordpress-relational-database
+    build:
+      context: ./docker-images/wordpress
+    image: jjeurissen/wordpress-peacepact-poc:latest
+    #restart: always
+    environment:
+      WORDPRESS_DB_HOST: wordpress-relational-database:3306
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      VIRTUAL_HOST: ${WORDPRESS_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${WORDPRESS_VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${WORDPRESS_LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    working_dir: /var/www/html
+    volumes:
+    #sudo chown -R www-data:www-data ./wp-content/
+      - ./data/wordpress/wp-content:/var/www/html/wp-content
+      - ./data/wordpress/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    networks:
+    - webproxy
+
+  wordpress-relational-database:
+    image: mariadb:10.3
+    #restart: always
+    volumes:
+    - wordpress-relational-database-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+    - webproxy
+networks:
+  webproxy:
+
+volumes:
+  wordpress-relational-database-data:
+    driver: local

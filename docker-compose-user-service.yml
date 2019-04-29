@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+
+  peacekeeper-service:
+    image: jjeurissen/peacepact-peacekeeper-service:latest
+    #restart: always
+    environment:
+      VIRTUAL_HOST: ${PEACEKEEPERS_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${PEACEKEEPERS_VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${PEACEKEEPERS_LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    ports:
+    - "8080"
+    depends_on:
+    - mongodb
+    networks:
+    - webproxy
+
+  mongodb:
+    image: mongo
+    #restart: always
+    networks:
+    - webproxy
+
+networks:
+  webproxy:

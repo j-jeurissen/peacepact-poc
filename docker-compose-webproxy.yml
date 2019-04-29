@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  #Automated nginx proxy for Docker containers using docker-gen https://github.com/jwilder/nginx-proxy
+  #alpine has HTTP/2 support(valid ssl cert required)
+  webproxy:
+    image: jwilder/nginx-proxy:alpine
+    container_name: nginx-proxy
+    #restart: always
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: 'true'
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./data/nginx/certs:/etc/nginx/certs:ro
+    - ./data/nginx/conf.d:/etc/nginx/conf.d
+    - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+    - ./data/nginx/html:/usr/share/nginx/html
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+    - webproxy
+
+  webproxy-ssl-companion:
+    #LetsEncrypt companion container for nginx-proxy https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt-nginx-proxy-companion
+    #restart: always
+    volumes:
+    - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+    - ./data/nginx/certs:/etc/nginx/certs:rw
+    - ./data/nginx/html:/usr/share/nginx/html
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+    - webproxy
+    networks:
+    - webproxy
+
+networks:
+  webproxy:

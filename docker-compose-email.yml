@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  iredmail:
+    container_name: iredmail-with-mysql
+    image: jjeurissen/iredmail:9.9.0
+    hostname: ${IREDMAIL_VIRTUAL_HOST}
+    ports:
+    - 8080:80
+    - 4443:443
+    #restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${IREDMAIL_DB_PASSWORD}
+      SOGO_WORKERS: 1
+      TZ: Europe/Prague
+      POSTMASTER_PASSWORD: "{PLAIN}${IREDMAIL_POSTMASTER_PASSWORD}"
+      IREDAPD_PLUGINS: "['reject_null_sender', 'reject_sender_login_mismatch', 'greylisting', 'throttle', 'amavisd_wblist', 'sql_alias_access_policy']"
+      VIRTUAL_HOST: ${IREDMAIL_VIRTUAL_HOST}
+      VIRTUAL_PORT: ${IREDMAIL_VIRTUAL_PORT}
+      LETSENCRYPT_HOST: ${IREDMAIL_LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      VIRTUAL_PROTO: https
+    volumes:
+    - iredmail-relational-database-data-mysql:/var/lib/mysql
+    - iredmail-relational-database-data-vmail:/var/vmail
+    - iredmail-relational-database-data-clamav:/var/lib/clamav
+    - ./data/nginx/certs/mail.peacepact.org/key.pem:/etc/ssl/private/iRedMail.key:ro
+    - ./data/nginx/certs/mail.peacepact.org/fullchain.pem:/etc/ssl/certs/iRedMail.crt:ro
+
+
+    networks:
+    - webproxy
+
+networks:
+  webproxy:
+
+volumes:
+  iredmail-relational-database-data-mysql:
+    driver: local
+  iredmail-relational-database-data-vmail:
+    driver: local
+  iredmail-relational-database-data-clamav:
+    driver: local
