@@ -7,6 +7,9 @@ services:
 #    image: jjeurissen/keycloak-dev:latest
     image: jboss/keycloak:5.0.0
     container_name: keycloak
+    ports:
+    - 8080
+    - 8443
     #restart: always
     environment:
       DB_VENDOR: POSTGRES
@@ -15,7 +18,7 @@ services:
       DB_DATABASE: ${KEYCLOAK_DB_DATABASE}
       DB_USER: ${KEYCLOAK_DB_USER}
       DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
-      JDBC_PARAMS: ${JDBC_PARAMS}
+      KEYCLOAK_JDBC_PARAMS: ${JDBC_PARAMS}
       KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KEYCLOAK_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
       EYCLOAK_HTTPS_PORT: ${KEYCLOAK_HTTPS_PORT}
