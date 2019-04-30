@@ -2,10 +2,10 @@ version: '3'
 
 services:
   keycloak:
-    #build:
-    #  context: ./docker-images/keycloak
-    #image: jjeurissen/keycloak:latest
-    image: jjeurissen/keycloak-dev:latest
+#    build:
+#      context: ./docker-images/keycloak
+#    image: jjeurissen/keycloak-dev:latest
+    image: jboss/keycloak:5.0.0
     container_name: keycloak
     #restart: always
     environment:
@@ -18,16 +18,22 @@ services:
       JDBC_PARAMS: ${JDBC_PARAMS}
       KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KEYCLOAK_HTTP_PORT: ${KEYCLOAK_HTTP_PORT}
+      EYCLOAK_HTTPS_PORT: ${KEYCLOAK_HTTPS_PORT}
       KEYCLOAK_USER: ${KEYCLOAK_USER}
       KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      KEYCLOAK_DEFAULT_THEME: peacepact
+      KEYCLOAK_WELCOME_THEME: peacepact
       #nginx-proxy
       VIRTUAL_HOST: ${KEYCLOAK_VIRTUAL_HOST}
       VIRTUAL_PORT: ${KEYCLOAK_VIRTUAL_PORT}
+      VIRTUAL_PROTO: https
       PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
       LETSENCRYPT_HOST: ${KEYCLOAK_LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     volumes:
     - ./docker-images/keycloak/theme/peacepact:/opt/jboss/keycloak/themes/peacepact
+    - ./data/nginx/certs/sso.peacepact.org/key.pem:/etc/x509/https/tls.key:ro
+    - ./data/nginx/certs/sso.peacepact.org/fullchain.pem:/etc/x509/https/tls.crt:ro
     depends_on:
     - keycloak-relational-database
     networks:
